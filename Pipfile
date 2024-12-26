@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+torch = "==2.5"
 
 [dev-packages]
 
