@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.nn.attention.flex_attention import flex_attention, create_block_mask
 
+
 class BidirectionalTemporalAttention(nn.Module):
     def __init__(self, embed_dim, num_heads, lookback_heads, lookahead_heads, block_size=128):
         super().__init__()
@@ -18,9 +19,12 @@ class BidirectionalTemporalAttention(nn.Module):
         self.block_size = block_size
 
         # Separate QKV projections for each head
-        self.q_projs = nn.ModuleList([nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
-        self.k_projs = nn.ModuleList([nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
-        self.v_projs = nn.ModuleList([nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
+        self.q_projs = nn.ModuleList(
+            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
+        self.k_projs = nn.ModuleList(
+            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
+        self.v_projs = nn.ModuleList(
+            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
 
         # Output projection
         self.out_proj = nn.Linear(embed_dim, embed_dim)
@@ -35,7 +39,8 @@ class BidirectionalTemporalAttention(nn.Module):
                 D: Embedding dimension
         """
         B, T, F, D = x.shape
-        x = x.reshape(B, T * F, D)  # Flatten frames into a combined temporal-spatial sequence
+        # Flatten frames into a combined temporal-spatial sequence
+        x = x.reshape(B, T * F, D)
         TF = T * F  # Combined temporal-spatial sequence length
 
         # Initialize lists to hold the outputs of each head
@@ -61,21 +66,20 @@ class BidirectionalTemporalAttention(nn.Module):
             lookahead_mask, B=B, H=self.lookahead_heads, Q_LEN=TF, KV_LEN=TF, device=x.device, BLOCK_SIZE=self.block_size
         )
 
+        def get_mask(
+            i): return lookback_block_mask if i < self.lookback_heads else lookahead_block_mask
         # Compute Q, K, V for all heads at once
-        q = torch.stack([proj(x) for proj in self.q_projs], dim=1)  # Shape: (B, num_heads, TF, head_dim)
-        k = torch.stack([proj(x) for proj in self.k_projs], dim=1)  # Shape: (B, num_heads, TF, head_dim)
-        v = torch.stack([proj(x) for proj in self.v_projs], dim=1)  # Shape: (B, num_heads, TF, head_dim)
+        # Shape: (B, num_heads, TF, head_dim)
+        q = torch.stack([proj(x) for proj in self.q_projs], dim=1)
+        # Shape: (B, num_heads, TF, head_dim)
+        k = torch.stack([proj(x) for proj in self.k_projs], dim=1)
+        # Shape: (B, num_heads, TF, head_dim)
+        v = torch.stack([proj(x) for proj in self.v_projs], dim=1)
 
-        # Apply FlexAttention with the appropriate block masks for all heads
-        attn_outputs = []
-        for i in range(self.num_heads):
-            block_mask = lookback_block_mask if i < self.lookback_heads else lookahead_block_mask
-            attn_output = flex_attention(q[:, i], k[:, i], v[:, i], block_mask=block_mask)
-            attn_outputs.append(attn_output)
-
-        # Concatenate all head outputs
-        combined_output = torch.cat(attn_outputs, dim=-1)  # Shape: (B, TF, embed_dim)
+        # Apply FlexAttention with the appropriate block masks for all heads and concatenate all head outputs
+        combined_output = torch.cat([flex_attention(q[:, i], k[:, i], v[:, i], 
+                                                    block_mask=get_mask(i)) for i in range(self.num_heads)], dim=-1)  # Shape: (B, TF, embed_dim)
 
         output = self.out_proj(combined_output)  # Shape: (B, T, F, D)
 
-        return output.reshape(B,T,F,D)
+        return output.reshape(B, T, F, D)

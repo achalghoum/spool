@@ -79,9 +79,9 @@ cls_token = cls_pool(out)
 print("CLS Token Shape:", cls_token.shape)
 ```
 
-## Scientific Design and Architecture
+## Design and Architecture
 
-FastBack’s design integrates scientifically validated methodologies to ensure its suitability for video analysis tasks:
+FastBack’s design integrates:
 
 1. **Preprocessing Module**
    - `AddCLSFrames`: Introduces CLS tokens to enhance global representation learning.
@@ -97,7 +97,7 @@ FastBack’s design integrates scientifically validated methodologies to ensure 
 
 ## Applications
 
-FastBack demonstrates strong applicability across diverse domains, including:
+FastBack is applicable across diverse domains, including:
 
 - **Video Understanding**: Supporting tasks like action recognition, video captioning, and video question answering (QA).
 - **Video Generation**: Facilitating the synthesis of coherent video sequences from latent representations.
