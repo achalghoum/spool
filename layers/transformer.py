@@ -3,9 +3,9 @@ import torch
 import torch.nn as nn
 
 
-class BTTransformerBlock(nn.Module):
+class BTTransformer(nn.Module):
     def __init__(self, embed_dim, num_heads, lookback_heads, lookahead_heads, frame_size, 
-                 ff_hidden_dim, block_size=128, dropout=0.1):
+                 ff_hidden_dim, dropout=0.1):
         super().__init__()
         self.pre_ln1 = nn.LayerNorm(embed_dim)
         self.attention = BidirectionalTemporalAttention(
@@ -14,7 +14,6 @@ class BTTransformerBlock(nn.Module):
             lookback_heads=lookback_heads,
             lookahead_heads=lookahead_heads,
             frame_size=frame_size,
-            block_size=block_size
         )
         self.dropout1 = nn.Dropout(dropout)
 

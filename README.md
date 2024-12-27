@@ -1,41 +1,40 @@
 # FastBack
 
-FastBack is an advanced framework for video understanding and generation, designed around a novel transformer architecture optimized for the simultaneous modeling of temporal and spatial dimensions. 
+FastBack is a framework for video understanding and generation. It uses transformers optimized for temporal and spatial modeling. The design includes bidirectional temporal attention, CLS token aggregation, and Hugging Face backbones, making it suitable for tasks like action recognition, video captioning, and video generation.
+
 ## Key Features
 
 ### 1. **Bidirectional Temporal Attention**
-FastBack leverages a `BidirectionalTemporalAttention` module that divides attention heads into two categories: lookback (past frames) and lookahead (future frames). This design provides precise temporal modeling capabilities, enabling:
+FastBack uses the `BidirectionalTemporalAttention` module with:
+- **Lookback Heads**: Focused on past frames.
+- **Lookahead Heads**: Focused on future frames.
 
-- Robust encoding of long-range temporal dependencies.
-- Computational efficiency through the use of block-based masking strategies.
+This approach models long-range dependencies and uses block-based masking for efficiency.
 
 ### 2. **CLS Frames for Context Aggregation**
-The architecture employs two CLS (classification) frames: one prepended to the start and one appended to the end of the sequence. These frames facilitate the capture of global contextual information. Core components include:
+Special start and end CLS frames capture global context:
+- **AddCLSFrames**: Adds start and end CLS frames.
+- **CLSPooling**: Aggregates embeddings from CLS frames for a sequence-level representation.
 
-- **AddCLSFrames**: Augments the input sequence by adding the CLS frames.
-- **CLSPooling**: Aggregates embeddings from both CLS frames to provide a comprehensive sequence-level representation.
+### 3. **Transformer Design**
+Multiple `BTTransformer` blocks combine attention, normalization, and feedforward layers for temporal-spatial modeling.
 
-### 3. **Transformer Block Architecture**
-Each transformer block integrates essential components for stable and efficient training:
+### 4. **Backbone Encoder**
+The backbone uses Hugging Face’s `AutoModel` for extracting features from video frames:
+- Pre-trained models for high performance.
+- Flexible support for different architectures.
+- Efficient preprocessing with resizing, normalization, and tensor conversion.
 
-- **Layer Normalization** to mitigate gradient instabilities.
-- **Feedforward Neural Network (FFN)** with GELU activation to enhance non-linearity.
-- Residual connections and dropout to promote robust optimization and generalization.
-
-### 4. **Modular and Scalable Design**
-The modular architecture, with components such as `AddCLSFrames`, `BidirectionalTemporalAttention`, and `TransformerBlock`, enables scalability and adaptability for diverse video tasks, including:
-
-- Action recognition.
-- Video captioning.
-- Video generation.
+### 5. **Modular and Scalable Design**
+FastBack components can be customized for specific tasks and scaled for various hardware and datasets.
 
 ## Installation
 
-To deploy FastBack, follow these steps:
+To install FastBack:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/fastback.git
+git clone https://github.com/achalghoum/fastback.git
 cd fastback
 
 # Install dependencies
@@ -45,60 +44,63 @@ pip install -r requirements.txt
 ## Usage
 
 ### Example Code
-Below is a concise example demonstrating how FastBack can be employed in a video processing pipeline:
+The following demonstrates FastBack in a video processing pipeline:
 
 ```python
 import torch
-from fastback import BTTransformer, AddCLSFrames, CLSPooling
+from fastback import FastBack
 
-# Define input tensor with dimensions: (batch_size, num_frames, num_patches, embed_dim)
-batch_size, num_frames, num_patches, embed_dim = 8, 16, 64, 128
-x = torch.randn(batch_size, num_frames, num_patches, embed_dim)
+# Define input tensor (batch_size, num_frames, height, width, channels)
+batch_size, num_frames, height, width, channels = 8, 16, 224, 224, 3
+x = torch.randn(batch_size, num_frames, height, width, channels)
 
-# Incorporate CLS Frames
-add_cls = AddCLSFrames(embed_dim=embed_dim, frame_size=num_patches)
-x_with_cls = add_cls(x)
-
-# Apply Transformer Block
-transformer_block = BTTransformerBlock(
-    embed_dim=embed_dim,
-    num_heads=8,
-    lookback_heads=4,
-    lookahead_heads=4,
-    frame_size=num_patches,
-    ff_hidden_dim=512,
-    block_size=128,
-    dropout=0.1
+# Initialize FastBack model
+model = FastBack(
+    num_hidden_layers=12,
+    num_attention_heads=12,
+    num_lookahead_heads=6,
+    num_lookback_heads=6,
+    image_size=224,
+    backbone_name="facebook/dinov2-base"
 )
-out = transformer_block(x_with_cls)
 
-# Perform CLS Pooling
-cls_pool = CLSPooling(embed_dim=embed_dim)
-cls_token = cls_pool(out)
-
+# Forward pass
+outputs, cls_token = model(x)
+print("Outputs Shape:", outputs.shape)
 print("CLS Token Shape:", cls_token.shape)
 ```
 
 ## Design and Architecture
 
-FastBack’s design integrates:
+### 1. **Preprocessing**
+- `BackboneFrameEncoder`: Encodes video frames using a pre-trained Hugging Face model.
+- Performs resizing, normalization, and tensor conversion.
 
-1. **Preprocessing Module**
-   - `AddCLSFrames`: Introduces CLS tokens to enhance global representation learning.
+### 2. **Context Augmentation**
+- `AddCLSFrames`: Adds start and end CLS tokens for global context learning.
 
-2. **Temporal-Spatial Attention Mechanism**
-   - `BidirectionalTemporalAttention`: Implements sophisticated masking to manage temporal dynamics, enabling selective attention across past and future frames.
+### 3. **Temporal-Spatial Attention**
+- `BidirectionalTemporalAttention`: Focuses on past and future frames with spatial awareness via masking.
 
-3. **Transformer Blocks**
-   - Combines advanced normalization, attention, and feedforward techniques with residual connections for efficient backpropagation and training stability.
+### 4. **Transformer Layers**
+- `BTTransformer`: Combines normalization, attention, feedforward layers, and residual connections for robust modeling.
 
-4. **Global Representation Aggregation**
-   - `CLSPooling`: Aggregates context across sequences using the two CLS frames for high-level representation suitable for downstream tasks.
+### 5. **Global Representation**
+- `CLSPooling`: Aggregates CLS frames to produce a sequence-level representation.
 
 ## Applications
+FastBack supports various video tasks:
 
-FastBack is applicable across diverse domains, including:
+- **Action Recognition**: Identifying activities in videos.
+- **Video Captioning**: Generating descriptions for video content.
+- **Video Generation**: Synthesizing video sequences.
+- **Multimodal Integration**: Combining video, text, and audio for tasks like question answering.
 
-- **Video Understanding**: Supporting tasks like action recognition, video captioning, and video question answering (QA).
-- **Video Generation**: Facilitating the synthesis of coherent video sequences from latent representations.
-- **Multimodal Integration**: Enabling cross-modal tasks involving video, text, and audio for enhanced capabilities.
+## Future Directions
+1. **Cross-Modal Integration**: Adding support for audio and text.
+2. **Pre-Trained Models**: Offering task-specific pre-trained versions.
+3. **Efficiency Improvements**: Using optimized attention mechanisms like Linformer.
+4. **Community Engagement**: Adding tutorials and examples.
+
+FastBack is designed for versatility in video tasks, using advanced transformers for performance and scalability.
+

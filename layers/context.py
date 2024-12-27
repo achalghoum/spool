@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class AddCLSFrames(nn.Module):
-    def __init__(self, embed_dim, frame_size):
+    def __init__(self, embed_dim):
         """
         Module to prepend and append CLS frames to the input sequence.
 
