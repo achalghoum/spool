@@ -9,7 +9,9 @@ class FastBack(nn.Module):
     """
     FastBack model for video understanding and generation tasks.
 
-    This model is designed to process video data by first extracting features from each frame using a backbone model, then adding context frames for global information, and finally applying a series of transformer layers to model temporal relationships. The final output includes a comprehensive sequence-level representation derived from the context frames.
+    This model is designed to process video data by first extracting features from each frame using a backbone model, then adding context frames for global information,
+    and finally applying a series of transformer layers to model temporal relationships.
+    The final output includes a comprehensive sequence-level representation derived from the context frames.
 
     Args:
         num_hidden_layers (int, optional): Number of hidden layers in the transformer. Defaults to 12.
@@ -22,7 +24,7 @@ class FastBack(nn.Module):
 
     def __init__(self,
                  num_hidden_layers: int = 12,  # Number of hidden layers in the transformer
-                 num_attention_heads=12,  # Total number of attention heads
+                 num_attention_heads:int =12,  # Total number of attention heads
                  num_lookahead_heads: int = 6,  # Number of lookahead attention heads
                  num_lookback_heads: int = 6,  # Number of lookback attention heads
                  image_size: int = 244,  # Size of the input images
@@ -38,7 +40,7 @@ class FastBack(nn.Module):
         # Initialize a list of transformer modules with the specified configuration
         self.transformers = nn.ModuleList([
             BTTransformer(embed_dim=self.backbone.embed_dim,
-                          num_heads=num_attention_heads,
+                          num_attention_heads=num_attention_heads,
                           num_lookahead_heads=num_lookahead_heads,
                           num_lookback_heads=num_lookback_heads)
             for i in range(num_hidden_layers)

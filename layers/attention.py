@@ -4,26 +4,26 @@ from torch.nn.attention.flex_attention import flex_attention, create_mask
 
 
 class BidirectionalTemporalAttention(nn.Module):
-    def __init__(self, embed_dim, num_heads, lookback_heads, lookahead_heads):
+    def __init__(self, embed_dim, num_attention_heads, num_lookback_heads, num_lookahead_heads):
         super().__init__()
-        assert num_heads == lookback_heads + lookahead_heads, \
+        assert num_attention_heads == num_lookback_heads + num_lookahead_heads, \
             "Total heads must equal the sum of lookback and lookahead heads."
-        assert embed_dim % num_heads == 0, \
+        assert embed_dim % num_attention_heads == 0, \
             "Embedding dimension must be divisible by the number of heads."
 
         self.embed_dim = embed_dim
-        self.num_heads = num_heads
-        self.lookback_heads = lookback_heads
-        self.lookahead_heads = lookahead_heads
-        self.head_dim = embed_dim // num_heads
+        self.num_attention_heads = num_attention_heads
+        self.num_lookback_heads = num_lookback_heads
+        self.num_lookahead_heads = num_lookahead_heads
+        self.head_dim = embed_dim // num_attention_heads
 
         # Separate QKV projections for each head
         self.q_projs = nn.ModuleList(
-            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
+            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_attention_heads)])
         self.k_projs = nn.ModuleList(
-            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
+            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_attention_heads)])
         self.v_projs = nn.ModuleList(
-            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_heads)])
+            [nn.Linear(embed_dim, self.head_dim) for _ in range(num_attention_heads)])
 
         # Output projection
         self.out_proj = nn.Linear(embed_dim, embed_dim)
@@ -54,14 +54,14 @@ class BidirectionalTemporalAttention(nn.Module):
 
         # Generate masks for lookback and lookahead
         lookback_mask = create_mask(
-            lookback_mask, B=B, H=self.lookback_heads, Q_LEN=TF, KV_LEN=TF, device=x.device
+            lookback_mask, B=B, H=self.num_lookback_heads, Q_LEN=TF, KV_LEN=TF, device=x.device
         )
         lookahead_mask = create_mask(
-            lookahead_mask, B=B, H=self.lookahead_heads, Q_LEN=TF, KV_LEN=TF, device=x.device
+            lookahead_mask, B=B, H=self.num_lookahead_heads, Q_LEN=TF, KV_LEN=TF, device=x.device
         )
 
         def get_mask(
-            i): return lookback_mask if i < self.lookback_heads else lookahead_mask
+            i): return lookback_mask if i < self.num_lookback_heads else lookahead_mask
         # Compute Q, K, V for all heads at once
         # Shape: (B, num_heads, TF, head_dim)
         q = torch.stack([proj(x) for proj in self.q_projs], dim=1)
@@ -72,7 +72,7 @@ class BidirectionalTemporalAttention(nn.Module):
 
         # Apply FlexAttention with the appropriate masks for all heads and concatenate all head outputs
         combined_output = torch.cat([flex_attention(q[:, i], k[:, i], v[:, i], 
-                                                    mask=get_mask(i)) for i in range(self.num_heads)], dim=-1)  # Shape: (B, TF, embed_dim)
+                                                    mask=get_mask(i)) for i in range(self.num_attention_heads)], dim=-1)  # Shape: (B, TF, embed_dim)
 
         output = self.out_proj(combined_output)  # Shape: (B, T, F, D)
 

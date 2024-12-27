@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
 from torchvision.transforms import Resize, Normalize, Compose, ToTensor
-from transformers import AutoModel, AutoFeatureExtractor
+from transformers import AutoModel, AutoImageProcessor
 
 
 class BackboneFrameEncoder(nn.Module):
-    def __init__(self, backbone_name, image_size=224, device="cuda"):
+    def __init__(self, backbone_name, image_size=224, device="cpu"):
         """
         Initializes the VideoEncoder with a Hugging Face backbone.
 
@@ -17,10 +17,9 @@ class BackboneFrameEncoder(nn.Module):
         super(BackboneFrameEncoder, self).__init__()
         self.device = device
         self.image_size = image_size
-
         # Load Hugging Face model and feature extractor
         self.backbone = AutoModel.from_pretrained(backbone_name).to(self.device)
-        self.feature_extractor = AutoFeatureExtractor.from_pretrained(backbone_name)
+        self.feature_extractor = AutoImageProcessor.from_pretrained(backbone_name)
         self.embed_dim = self.backbone.config.hidden_size  # Token embedding dimension
 
         # Preprocessing for video frames
@@ -68,7 +67,7 @@ class BackboneFrameEncoder(nn.Module):
         if hasattr(outputs, "last_hidden_state"):
             frame_embeddings = outputs.last_hidden_state  # Shape: (B * F, L, D)
         else:
-            raise ValueError("Unsupported backbone output format.")
+            frame_embeddings = outputs[0]
 
         # Reshape to (B, F, L, D)
         frame_embeddings = frame_embeddings.view(B, F, -1, self.embed_dim)
