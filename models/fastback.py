@@ -28,6 +28,7 @@ class FastBack(nn.Module):
                  num_lookahead_heads: int = 6,  # Number of lookahead attention heads
                  num_lookback_heads: int = 6,  # Number of lookback attention heads
                  image_size: int = 244,  # Size of the input images
+                 local_frame_range: int = 16,
                  backbone_name: str = "facebook/dinov2-base"):  # Name of the backbone model
         super().__init__()
         self.backbone = BackboneFrameEncoder(
@@ -42,6 +43,7 @@ class FastBack(nn.Module):
             BTTransformer(embed_dim=self.backbone.embed_dim,
                           num_attention_heads=num_attention_heads,
                           num_lookahead_heads=num_lookahead_heads,
+                          local_frame_range = local_frame_range,
                           num_lookback_heads=num_lookback_heads)
             for i in range(num_hidden_layers)
         ])

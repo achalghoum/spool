@@ -5,9 +5,9 @@ from transformers import AutoModel, AutoImageProcessor
 
 
 class BackboneFrameEncoder(nn.Module):
-    def __init__(self, backbone_name, image_size=224, device="cpu"):
+    def __init__(self, backbone_name, image_size=224, device:str="cuda"):
         """
-        Initializes the VideoEncoder with a Hugging Face backbone.
+        Initializes the BackboneFrameEncoder with a Hugging Face backbone.
 
         Args:
             backbone_name (str): Name of the Hugging Face model to load as the backbone.
