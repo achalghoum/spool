@@ -5,9 +5,9 @@ from layers.context import AddCLSFrames, CLSPooling
 from layers.transformer import BTTransformer
 
 
-class FastBack(nn.Module):
+class Spool(nn.Module):
     """
-    FastBack model for video understanding and generation tasks.
+    Spool model for video understanding.
 
     This model is designed to process video data by first extracting features from each frame using a backbone model, then adding context frames for global information,
     and finally applying a series of transformer layers to model temporal relationships.
@@ -58,7 +58,7 @@ class FastBack(nn.Module):
 
     def forward(self, x: torch.Tensor):
         """
-        Forward pass through the FastBack model.
+        Forward pass through the Spool model.
 
         Args:
             x (torch.Tensor): Input tensor to the model.

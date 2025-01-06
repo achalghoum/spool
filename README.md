@@ -1,6 +1,6 @@
-# FastBack: A Bidirectional Temporal Transformer Architecture for Video Understanding
+# Spool: A Bidirectional Temporal Transformer Architecture for Video Understanding
 
-FastBack presents a novel neural architecture that introduces bidirectional temporal attention for video understanding. The model combines local temporal relationships with global contextual information, enabling comprehensive video sequence analysis.
+Spool presents a novel neural architecture that introduces bidirectional temporal attention for video understanding. The model combines local temporal relationships with global contextual information, enabling comprehensive video sequence analysis.
 
 ## Technical Overview
 
@@ -25,7 +25,7 @@ The architecture consists of three primary components that work in concert to pr
 ## Implementation
 
 ```python
-model = FastBack(
+model = Spool(
     num_hidden_layers=12,      # Depth of temporal processing
     num_attention_heads=12,    # Total attention heads
     num_lookahead_heads=6,     # Future context heads
@@ -61,11 +61,11 @@ The architecture can be configured through the following parameters:
 ## Project Structure
 
 ```
-fastback/
+spool/
 ├── layers/
 │   ├── attention.py      # Bidirectional attention implementation
 │   ├── backbone.py       # Visual feature extraction
 │   ├── context.py        # Context frame mechanisms
 │   └── transformer.py    # Feature processing blocks
-└── fastback.py           # Architecture definition
+└── spool.py           # Architecture definition
 ```
