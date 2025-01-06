@@ -7,8 +7,7 @@ Spool presents a novel neural architecture that introduces bidirectional tempora
 The architecture consists of three primary components that work in concert to process video sequences:
 
 1. **Dense Visual Feature Extraction**
-   - Leverages self-supervised vision models for frame-level representation
-   - Produces dense token embeddings that capture spatial relationships
+   - Leverages foundation vision models for frame-level representation
    - Default backbone: DINOv2, chosen for its strong performance in self-supervised learning
 
 2. **Temporal Context Framing**
@@ -19,7 +18,8 @@ The architecture consists of three primary components that work in concert to pr
 3. **Bidirectional Temporal Attention Mechanism**
    - Implements separate lookback and lookahead attention paths
    - Supports asymmetric attention allocation for temporal modeling
-   - Incorporates local frame range constraints to focus on relevant temporal windows
+   - Local frame range constraints to focus on relevant temporal windows
+   - Global attention attention through context frames to complement local attention at frame level
 
 
 ## Implementation
@@ -54,7 +54,7 @@ The architecture can be configured through the following parameters:
 
 ## Technical Requirements
 
-- Python 3.7+
+- Python 3.11+
 - PyTorch 2.5+
 - CUDA-compatible GPU
 
@@ -62,10 +62,11 @@ The architecture can be configured through the following parameters:
 
 ```
 spool/
-├── layers/
-│   ├── attention.py      # Bidirectional attention implementation
-│   ├── backbone.py       # Visual feature extraction
-│   ├── context.py        # Context frame mechanisms
-│   └── transformer.py    # Feature processing blocks
-└── spool.py           # Architecture definition
+   ├── layers/
+   │   ├── attention.py      # Bidirectional attention implementation
+   │   ├── backbone.py       # Visual feature extraction
+   │   ├── context.py        # Context frame mechanisms
+   │   └── transformer.py    # Feature processing blocks
+   └── models/
+       └── spool.py       # Architecture definition
 ```
