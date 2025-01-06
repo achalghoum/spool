@@ -31,9 +31,18 @@ model = FastBack(
     num_lookahead_heads=6,     # Future context heads
     num_lookback_heads=6,      # Past context heads
     image_size=224,           # Spatial dimension
+    num_hidden_layers=12,      # Depth of temporal processing
+    num_attention_heads=12,    # Total attention heads
+    num_lookahead_heads=6,     # Future context heads
+    num_lookback_heads=6,      # Past context heads
+    image_size=224,           # Spatial dimension
     backbone_name="facebook/dinov2-base"
 )
 
+# Input shape: [batch_size, temporal_frames, height, width, channels]
+# Output shapes: 
+# - features: [batch_size, temporal_frames + 2, spatial_tokens, embedding_dim]
+# - context: [batch_size, 2 * embedding_dim]
 # Input shape: [batch_size, temporal_frames, height, width, channels]
 # Output shapes: 
 # - features: [batch_size, temporal_frames + 2, spatial_tokens, embedding_dim]
