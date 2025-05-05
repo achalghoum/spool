@@ -1,6 +1,6 @@
 # Spool: A Bidirectional Temporal Transformer Architecture for Video Understanding
 
-Spool presents a novel neural architecture that introduces bidirectional temporal attention for video understanding. The model combines local temporal relationships with global contextual information, enabling comprehensive video sequence analysis.
+Spool presents a neural architecture that introduces bidirectional temporal attention for video understanding. The model combines local temporal relationships with global contextual information, enabling comprehensive video sequence analysis.
 
 ## Technical Overview
 

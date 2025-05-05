@@ -5,7 +5,7 @@ from transformers import AutoModel, AutoImageProcessor
 
 
 class BackboneFrameEncoder(nn.Module):
-    def __init__(self, backbone_name, image_size=224, device:str="cuda"):
+    def __init__(self, backbone_name, image_size=224, device: str = "cuda"):
         """
         Initializes the BackboneFrameEncoder with a Hugging Face backbone.
 
@@ -23,11 +23,15 @@ class BackboneFrameEncoder(nn.Module):
         self.embed_dim = self.backbone.config.hidden_size  # Token embedding dimension
 
         # Preprocessing for video frames
-        self.preprocess = Compose([
-            Resize((image_size, image_size)),
-            ToTensor(),  # Converts to [C, H, W]
-            Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Standard ImageNet normalization
-        ])
+        self.preprocess = Compose(
+            [
+                Resize((image_size, image_size)),
+                ToTensor(),  # Converts to [C, H, W]
+                Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),  # Standard ImageNet normalization
+            ]
+        )
 
     def preprocess_frames(self, video_frames):
         """
@@ -42,7 +46,9 @@ class BackboneFrameEncoder(nn.Module):
         B, F, H, W, C = video_frames.shape
         video_frames = video_frames.view(B * F, H, W, C)  # Flatten batch and frames
         video_frames = video_frames.permute(0, 3, 1, 2)  # Convert to (B * F, C, H, W)
-        preprocessed = torch.stack([self.preprocess(frame) for frame in video_frames])  # Apply transforms
+        preprocessed = torch.stack(
+            [self.preprocess(frame) for frame in video_frames]
+        )  # Apply transforms
         return preprocessed.to(self.device)
 
     def forward(self, video_frames):
