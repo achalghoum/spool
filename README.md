@@ -8,7 +8,7 @@ The architecture consists of three primary components that work in concert to pr
 
 1. **Dense Visual Feature Extraction**
    - Leverages foundation vision models for frame-level representation
-   - Default backbone: DINOv2, chosen for its strong performance in self-supervised learning
+   - Default backbone: DINOv2, chosen for its strong performance in different vision tasks and its stable learned features
 
 2. **Temporal Context Framing**
    - Introduces specialized context frames at sequence boundaries
